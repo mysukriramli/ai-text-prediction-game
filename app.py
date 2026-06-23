@@ -8,7 +8,7 @@ st.title("📱 Mystery Next-Word Text Engine")
 st.markdown("---")
 
 # --- THE SCRAMBLED DICTIONARY LAYER ---
-# The highest percentage option is intentionally mixed up across different columns
+# The highest percentage option is mixed up across different columns each round
 rounds = [
     {
         "prefix": "Buruh nelayan dan juga ",
@@ -47,8 +47,8 @@ if "step" not in st.session_state:
     st.session_state.step = 0
 if "accumulated_text" not in st.session_state:
     st.session_state.accumulated_text = ""
-if "hallucinated" not in st.session_state:
-    st.session_state.hallucinated = False
+if "low_prob_chosen" not in st.session_state:
+    st.session_state.low_prob_chosen = False
 
 # --- GAME ACTIVE MODE ---
 if st.session_state.step < len(rounds):
@@ -70,7 +70,7 @@ if st.session_state.step < len(rounds):
         if cols[idx].button(button_label, key=f"btn_{st.session_state.step}_{idx}", use_container_width=True):
             # Track if the student clicks anything other than the mathematically highest word
             if word != current_round["correct_word"]:
-                st.session_state.hallucinated = True
+                st.session_state.low_prob_chosen = True
             
             # Save choice and advance internal model index
             st.session_state.accumulated_text = display_text + word
@@ -82,14 +82,21 @@ else:
     st.markdown("## 🇲🇾 Surprise Reveal: Keranamu Malaysia!")
     st.markdown("---")
     
-    # Render final output text box based on student journey path
-    if st.session_state.hallucinated:
-        st.error("🚨 **CRITICAL MODEL ERROR: Text Generation Hallucinated!**")
-        st.markdown("You selected an alternative prediction token. The output sequence broke pattern sync:")
+    # Render final output text box based on student choices
+    if st.session_state.low_prob_chosen:
+        st.warning("⚠️ **Low Probability Path Selected**")
+        st.markdown("""
+            An AI usually avoids these low-percentage paths because they are completely **unfamiliar**. It has never 
+            learned those specific word combinations before during its training phase. 
+            
+            Because the AI doesn't actually understand the whole context—it doesn't know that this is an iconic patriotic 
+            lyric song about **Keranamu Malaysia**—it just follows math. By veering off the high-probability track, 
+            the text pattern broke and generated an alternative version:
+        """)
         st.code(st.session_state.accumulated_text, language="text")
     else:
-        st.success("🎯 **PERFECT GENERATION: Model Weights Fully Aligned!**")
-        st.markdown("Your choices perfectly matched the maximum statistical expectation of the training set:")
+        st.success("🎯 **PERFECT GENERATION: Maximum Probability Path**")
+        st.markdown("Your choices perfectly matched the highest statistical expectations of the training data:")
         st.code(st.session_state.accumulated_text + """
 Jaguh sukan dan juga jutawan
 Berkereta jenama negara
@@ -106,17 +113,16 @@ Kita semua pasti merasa bangga!
     st.header("💡 Why are AI Essays So Easily Detected?")
     
     st.markdown("""
-    By clicking through this game, you just proved the exact mathematical flaw that makes AI writing easy to spot. 
-    Here is what is happening under the hood:
+    By clicking through this game, you just demonstrated the exact mathematical reason why AI writing detectors work so well:
     
-    * **The Trap of High Similarity:** Like you, an LLM (Large Language Model) is trained on existing text data. When generating an essay, it constantly looks back at what it just wrote and plays a safe statistical game, picking words with the highest similarity percentages.
-    * **The Illusion of Creativity:** AI does not actually 'create' anything brand new. It mirrors paths it has already walked during training. It can only generate combinations of things it has already seen.
-    * **The Predictability Footprint:** Because an AI almost always follows maximum probability chains, its text lacks human spontaneity. It produces mathematically perfect, ultra-predictable word patterns.
+    * **The Trap of High Similarity:** An LLM (Large Language Model) always plays a safe statistical game. It constantly picks words with the highest similarity percentages based on what it learned in training.
+    * **No Real Understanding:** AI doesn't know what a 'national anthem' or 'emotion' is. It just connects words that frequently sit next to each other in its memory database.
+    * **The Predictability Footprint:** Because an AI almost always follows the maximum probability chains to avoid unfamiliar territory, its writing lacks natural human randomness. It produces word patterns that are statistically 'too perfect.'
     """)
     
     st.info("""
-    > 🧠 **How AI Detectors Catch It:** Human writers are beautifully chaotic. We mix rare words, sudden structure shifts, and weird metaphors with low statistical probability. 
-    > AI detectors look for text that is 'too predictable.' If an essay flows perfectly along the highest probable word tracks—exactly like clicking the maximum percentage buttons in this game—the detector flags it as machine-generated instantly!
+    > 🧠 **The Catch:** Human writers are beautifully unpredictable. We mix rare vocabulary, sudden structure shifts, and unique metaphors that an AI's math would score as 'low probability.' 
+    > If a student's essay flows perfectly along the highest probable word tracks—exactly like clicking the maximum percentage buttons in this game—detection algorithms spot the machine-like consistency instantly!
     """)
     
     # Reset button to reload class memory loops
@@ -124,5 +130,5 @@ Kita semua pasti merasa bangga!
     if st.button("🔄 Wipe Model Cache (Restart Game)", use_container_width=True):
         st.session_state.step = 0
         st.session_state.accumulated_text = ""
-        st.session_state.hallucinated = False
+        st.session_state.low_prob_chosen = False
         st.rerun()
