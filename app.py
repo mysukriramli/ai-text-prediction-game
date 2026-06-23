@@ -1,56 +1,58 @@
 import streamlit as st
 
 # Set a clean page layout
-st.set_page_config(layout="wide", page_title="AI Next-Token Predictor Game")
+st.set_page_config(layout="wide")
 
-st.title("🤖 The Human-GPT Experiment: Next-Token Prediction Game")
+st.title("📱 The Smartphone Autocomplete Game: How AI Thinks")
 st.markdown("""
-    **Classroom Concept:** Large Language Models (LLMs) do not understand text; they simply predict the next 
-    word (token) based on probability. In this game, **you** are the AI model trained on Malaysian historical text. 
-    Can your weights accurately predict the next token?
+    **Classroom Activity:** Let's see if you can guess words as fast as an AI! 
+    Just like your phone tries to guess the next word when you text your friends, ChatGPT predicts the next word 
+    using patterns it has learned. 
+    
+    We have 'trained' this mini-AI on the patriotic lyrics of **Keranamu Malaysia**. Let's see if your brain matches the phone's math!
 """)
 
-# --- GAME DATASET (The Training Data) ---
+# --- THE SIMPLIFIED PUZZLE DATA ---
 game_rounds = [
     {
         "context": "Buruh nelayan dan juga",
-        "options": {"petani": "92% (High Probability)", "pekerja": "5% (Low Probability)", "pelajar": "3% (Rare Token)"},
+        "options": {"petani": "92% (High Chance)", "pekerja": "5% (Low Chance)", "pelajar": "3% (Unlikely)"},
         "correct": "petani",
-        "fact": "The model assigns 92% weight to 'petani' because of strong matching patterns in the training corpus."
+        "explanation": "The phone gives 'petani' a 92% score because it perfectly matches the pattern of the famous song line."
     },
     {
         "context": "Buruh nelayan dan juga petani, Gaya hidup kini dah",
-        "options": {"berakhir": "12% (Plausible)", "berubah": "85% (High Probability)", "bermula": "3% (Distractor)"},
+        "options": {"berakhir": "12% (Maybe)", "berubah": "85% (High Chance)", "bermula": "3% (Unlikely)"},
         "correct": "berubah",
-        "fact": "Context window updated. The structural vector shifts heavily toward 'berubah' to preserve the rhyme scheme."
+        "explanation": "Based on the memory of the rhyme scheme, the autocomplete engine heavily favors 'berubah'."
     },
     {
         "context": "Buruh nelayan dan juga petani, Gaya hidup kini dah berubah, Anak-anak terasuh",
-        "options": {"mindanya": "97% (Max Probability)", "jiwanya": "2% (Low Probability)", "bakatnya": "1% (Rare Token)"},
+        "options": {"mindanya": "97% (Almost Certain)", "jiwanya": "2% (Low Chance)", "bakatnya": "1% (Unlikely)"},
         "correct": "mindanya",
-        "fact": "A highly predictable token sequence. The model's internal attention mechanism is locked onto semantic harmony."
+        "explanation": "A super predictable line! The phone's calculation is nearly 100% sure the next word is 'mindanya'."
     },
     {
-        "context": "... Mindanya, Lahir generasi bijak pandai, Pakar IT pakar ekonomi, Jaguh sukan dan juga jutawan, Berkereta jenama",
-        "options": {"mewah": "15% (Generic Choice)", "import": "5% (Alternative Word)", "negara": "80% (Contextual Match)"},
+        "context": "... Lahir generasi bijak pandai, Pakar IT pakar ekonomi, Jaguh sukan dan juga jutawan, Berkereta jenama",
+        "options": {"mewah": "15% (Generic Guess)", "import": "5% (Alternative Word)", "negara": "80% (High Chance)"},
         "correct": "negara",
-        "fact": "Localized training bias! A generic AI might guess 'mewah', but a model trained on Malaysian history strongly weights 'negara'."
+        "explanation": "A generic phone might guess 'mewah', but a phone trained on Malaysian history knows 'negara' is the exact pattern match here."
     },
     {
-        "context": "... Berkereta jenama negara, Megah menyusur di jalan raya, Alam cyber teknologi terkini, Kejayaan semakin hampiri, Biar di kota ataupun desa, Kita semua pasti merasa",
-        "options": {"gembira": "10% (Plausible)", "bangga": "88% (High Probability)", "selesa": "2% (Rhyme Break)"},
+        "context": "... Alam cyber teknologi terkini, Kejayaan semakin hampiri, Biar di kota ataupun desa, Kita semua pasti merasa",
+        "options": {"gembira": "10% (Plausible)", "bangga": "88% (High Chance)", "selesa": "2% (Rhyme Break)"},
         "correct": "bangga",
-        "fact": "The attention heads evaluate patriotic sentiment across the entire paragraph to score 'bangga' as the optimal next step."
+        "explanation": "The engine scans the patriotic tone of the entire paragraph to score 'bangga' as the absolute best fit."
     },
     {
-        "context": "... Kita semua pasti merasa bangga, Keranamu kami mendakap tuah, Keranamu kami bangsa",
-        "options": {"berjaya": "94% (High Probability)", "merdeka": "4% (Valid but out of order)", "berdaulat": "2% (Low Weight)"},
+        "context": "... Keranamu kami mendakap tuah, Keranamu kami bangsa",
+        "options": {"berjaya": "94% (High Chance)", "merdeka": "4% (Valid Word, Wrong Order)", "berdaulat": "2% (Low Chance)"},
         "correct": "berjaya",
-        "fact": "Sequence completed successfully. The generation weights maximize precision by closing the phrase loops systematically."
+        "explanation": "Sequence complete! The prediction engine successfully matched the lyric flow step-by-step."
     }
 ]
 
-# --- PERSISTENT GAME STORAGE ---
+# --- PERSISTENT STORAGE ---
 if "current_round" not in st.session_state:
     st.session_state.current_round = 0
 if "score" not in st.session_state:
@@ -58,68 +60,79 @@ if "score" not in st.session_state:
 if "game_over" not in st.session_state:
     st.session_state.game_over = False
 
-# Layout split
+# Layout split: 1/2 Left Dashboard, 1/2 Right Inputs
 col1, col2 = st.columns([1, 1])
 
-# --- LEFT COLUMN: THE LIVE AI CONTEXT ENGINE ---
+# --- COLUMN 1: THE SMARTPHONE BRAIN ---
 with col1:
-    st.header("🧠 AI Model Internal State")
+    st.header("🧠 The Phone's Internal Brain")
     
     if not st.session_state.game_over:
         current_data = game_rounds[st.session_state.current_round]
         
-        # Display the prompt context window
-        st.markdown("### 📥 Active Context Window (Input Prompt)")
-        st.info(f"\"{current_data['context']} ...\"")
+        # Simple Memory Box
+        st.markdown("### 📥 1. The Phone's Memory Box")
+        st.info(f"\"{current_data['context']} [ ??? ]\"")
+        st.caption("This is the exact sentence the phone is allowed to look at to guess the missing word.")
         
-        # Educational LLM Simulator Settings
-        st.markdown("### 🎛️ Hyperparameter Controls")
-        temperature = st.slider("Model Temperature (Randomness)", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
-        st.caption("Lower temperature makes the AI predictable and deterministic. Higher temperature forces creative, chaotic guesses.")
+        # Simple Chaos Slider
+        st.markdown("### 🎛️ 2. The Chaos Slider (Temperature)")
+        temperature = st.slider("Set AI Randomness Level:", min_value=0.0, max_value=1.0, value=0.2, step=0.1)
+        if temperature <= 0.3:
+            st.caption("🟢 **Safe Mode:** The phone is acting normal and will only pick the most predictable words.")
+        elif temperature <= 0.7:
+            st.caption("🟡 **Balanced Mode:** The phone might try some creative or alternative guesses.")
+        else:
+            st.caption("🔴 **Chaos Mode:** The phone is acting wild! It might ignore the best answer entirely and create gibberish.")
         
-        # Score Tracking widget
-        st.metric(label="Model Prediction Accuracy", value=f"{st.session_state.score} / {len(game_rounds)}")
+        # Easy Score widget
+        st.metric(label="🎯 Your Correct Guesses", value=f"{st.session_state.score} / {len(game_rounds)}")
     else:
         st.balloons()
-        st.success("🎉 Training Complete! The human model has finalized its parameter weights successfully.")
-        st.metric(label="Final Model Accuracy", value=f"{st.session_state.score} / {len(game_rounds)}")
+        st.success("🎉 Phone Prediction Routine Complete!")
+        st.metric(label="🏆 Final Class Accuracy Score", value=f"{st.session_state.score} / {len(game_rounds)}")
 
-# --- RIGHT COLUMN: NEXT-TOKEN SELECTION PORTAL ---
+# --- COLUMN 2: THE STUDENT CHOICE GAME ---
 with col2:
-    st.header("🔮 Token Prediction Selector")
+    st.header("🧩 The Word Puzzle")
     
     if not st.session_state.game_over:
         current_data = game_rounds[st.session_state.current_round]
         
-        st.write("Review the context window on the left, then select the absolute best token to continue the sequence:")
+        st.write("Look at the **Memory Box** on the left. Which word puzzle piece should autocomplete this sentence?")
         
-        # Turn dict keys into button choices for parameters
         options_list = list(current_data["options"].keys())
         
         with st.form(key="prediction_form"):
-            user_choice = st.radio("Select the next token vector:", options_list, format_func=lambda x: f"'{x}' — Calculated Confidence: {current_data['options'][x]}")
-            submit_token = st.form_submit_button(label="⚡ Execute Next-Token Generation")
+            user_choice = st.radio(
+                "Choose a word piece to insert:", 
+                options_list, 
+                format_func=lambda x: f"'{x}' — Phone's Calculation: {current_data['options'][x]}"
+            )
+            
+            submit_token = st.form_submit_button(label="⚡ Tap to Autocomplete Word")
             
             if submit_token:
+                # Custom kid-friendly feedback logs
                 if user_choice == current_data["correct"]:
                     st.session_state.score += 1
-                    st.toast("✅ Target token matched! Attention weights aligned.", icon="🎯")
+                    st.success(f"🎯 **Boom! Correct!** You guessed exactly what the phone calculated.")
                 else:
-                    st.toast("❌ Hallucination! Divergent token selected.", icon="⚠️")
+                    st.error(f"⚠️ **Phone Hallucination!** The word you picked doesn't fit the expected pattern loop.")
                 
-                # Show engine logs
-                st.markdown("#### 🤖 Execution Logs")
-                st.code(f"Selected: '{user_choice}'\nTarget: '{current_data['correct']}'\nLog: {current_data['fact']}")
+                # Fun Phone Explanation logs
+                st.markdown("#### 📝 Why did the phone think this?")
+                st.help(current_data["explanation"])
                 
-                # Advance round logic
+                # Turn logic management
                 if st.session_state.current_round + 1 < len(game_rounds):
                     st.session_state.current_round += 1
-                    st.markdown("👉 *Click the 'Execute' button above again to feed the new sequence into the context layer.*")
+                    st.markdown("👇 *Tap the 'Autocomplete' button above one more time to reload the next line!*")
                 else:
                     st.session_state.game_over = True
                     st.rerun()
     else:
-        st.write("The complete sequence has been compiled by the student cluster network:")
+        st.write("You have successfully helped the phone autocomplete the iconic National Day lyric sequence:")
         st.code("""
         Buruh nelayan dan juga petani
         Gaya hidup kini dah berubah
@@ -134,7 +147,7 @@ with col2:
         Keranamu kami bangsa berjaya!
         """)
         
-        if st.button("🔄 Clear Model Memory (Reset Game)"):
+        if st.button("🔄 Restart Game & Clear Phone Memory"):
             st.session_state.current_round = 0
             st.session_state.score = 0
             st.session_state.game_over = False
